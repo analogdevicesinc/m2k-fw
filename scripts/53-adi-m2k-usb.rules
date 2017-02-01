@@ -1,0 +1,6 @@
+# allow "plugdev" group read/write access to ADI M2K devices
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0456", ATTRS{idProduct}=="b672", MODE="0664", GROUP="plugdev"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0456", ATTRS{idProduct}=="b675", MODE="0664", GROUP="plugdev"
+# tell the ModemManager (part of the NetworkManager suite) that the device is not a modem, 
+# and don't send AT commands to it
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0456", ATTRS{idProduct}=="b672", ENV{ID_MM_DEVICE_IGNORE}="1"
