@@ -1,7 +1,7 @@
 #PATH=$PATH:/opt/Xilinx/SDK/2015.4/gnu/arm/lin/bin
 
 CROSS_COMPILE ?= arm-xilinx-linux-gnueabi-
-VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/2015.4/settings64.sh
+VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/2016.2/settings64.sh
 
 NCORES = $(shell grep -c ^processor /proc/cpuinfo)
 LINUXDIR = linux-private
