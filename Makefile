@@ -4,7 +4,7 @@ CROSS_COMPILE ?= arm-xilinx-linux-gnueabi-
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/2016.2/settings64.sh
 
 NCORES = $(shell grep -c ^processor /proc/cpuinfo)
-LINUXDIR = linux-private
+LINUXDIR = linux
 VSUBDIRS = buildroot $(LINUXDIR)
 
 USBPID = 0xb675
@@ -74,10 +74,7 @@ build/m2k.itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz build
 	u-boot-xlnx/tools/mkimage -f scripts/m2k.its $@
 
 build/system_top.hdf:  | build
-#	wget -N --directory-prefix build http://10.50.1.20/jenkins_export/hdl/dev/pluto/latest/system_top.hdf || bash -c "source $(VIVADO_SETTINGS) && cd hdl/projects/pluto/ && make"
-#	wget -N --directory-prefix build http://10.50.1.20/jenkins_export/hdl/dev/pluto/latest/system_top.hdf
-
-### TODO: Build system_top.hdf from src if dl fails - need 2016.2 for that ...
+	bash -c "source $(VIVADO_SETTINGS) && make -C hdl m2k.standalone && cp hdl/projects/m2k/standalone/m2k.sdk/system_top.hdf $@"
 
 build/sdk/fsbl/Release/fsbl.elf build/sdk/hw_0/system_top.bit : build/system_top.hdf
 	bash -c "source $(VIVADO_SETTINGS) && xsdk -batch -source scripts/create_fsbl_project.tcl"
