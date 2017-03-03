@@ -12,7 +12,15 @@ USBPID = 0xb675
 VERSION=$(shell git describe --abbrev=4 --dirty --always --tags)
 UBOOT_VERSION=$(shell echo -n "M2k " && cd u-boot-xlnx && git describe --abbrev=0 --dirty --always --tags)
 
-all: build/m2k.dfu build/m2k.frm build/boot.dfu build/uboot-env.dfu build/boot.frm
+
+ifeq (, $(shell which dfu-suffix))
+$(warning "No dfu-utils in PATH consider doing: sudo apt-get install dfu-util")
+TARGETS = build/m2k.frm build/boot.frm
+else
+TARGETS = build/m2k.dfu build/m2k.frm build/boot.dfu build/uboot-env.dfu build/boot.frm
+endif
+
+all: $(TARGETS) zip-all jtag-bootstrap
 
 build:
 	mkdir -p $@
@@ -118,7 +126,7 @@ clean:
 	rm -f $(notdir $(wildcard build/*))
 	rm -rf build/*
 
-zip-all:  build/m2k.dfu build/m2k.frm build/boot.dfu build/uboot-env.dfu build/boot.frm
+zip-all: $(TARGETS)
 	zip -j build/m2k-fw-$(VERSION).zip $^
 
 dfu-m2k: build/m2k.dfu
@@ -144,6 +152,9 @@ dfu-ram: build/m2k.dfu
 	dfu-util -D build/m2k.dfu -a firmware.dfu
 	dfu-util -e
 
+jtag-bootstrap: build/u-boot.elf build/sdk/hw_0/ps7_init.tcl build/sdk/hw_0/system_top.bit scripts/run.tcl
+	$(CROSS_COMPILE)strip build/u-boot.elf
+	zip -j build/m2k-$@-$(VERSION).zip $^
 
 git-update-all:
 	git submodule update --recursive --remote
