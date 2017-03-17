@@ -3,7 +3,7 @@
 CROSS_COMPILE ?= arm-xilinx-linux-gnueabi-
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/2016.2/settings64.sh
 
-NCORES = $(shell grep -c ^processor /proc/cpuinfo)
+NCORES = $(shell nproc)
 LINUXDIR = linux
 VSUBDIRS = buildroot $(LINUXDIR)
 
