@@ -2,6 +2,7 @@
 
 CROSS_COMPILE ?= arm-xilinx-linux-gnueabi-
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/2016.2/settings64.sh
+XSDK_SETTINGS ?= ${VIVADO_SETTINGS}
 
 NCORES = $(shell nproc)
 LINUXDIR = linux
@@ -59,7 +60,7 @@ build/zImage: $(LINUXDIR)/arch/arm/boot/zImage  | build
 
 ### Device Tree ###
 
-$(LINUXDIR)/arch/arm/boot/dts/%.dtb: $(LINUXDIR)/arch/arm/boot/dts/%.dts  $(LINUXDIR)/arch/arm/boot/dts/zynq-m2k.dtsi
+$(LINUXDIR)/arch/arm/boot/dts/%.dtb: $(LINUXDIR)/arch/arm/boot/dts/%.dts $(LINUXDIR)/arch/arm/boot/dts/zynq-m2k.dtsi $(LINUXDIR)/arch/arm/boot/dts/zynq-7000.dtsi
 	make -C $(LINUXDIR) -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) $(notdir $@)
 
 build/%.dtb: $(LINUXDIR)/arch/arm/boot/dts/%.dtb | build
@@ -85,14 +86,14 @@ build/system_top.hdf:  | build
 	bash -c "source $(VIVADO_SETTINGS) && make -C hdl m2k.standalone && cp hdl/projects/m2k/standalone/m2k.sdk/system_top.hdf $@"
 
 build/sdk/fsbl/Release/fsbl.elf build/sdk/hw_0/system_top.bit : build/system_top.hdf
-	bash -c "source $(VIVADO_SETTINGS) && xsdk -batch -source scripts/create_fsbl_project.tcl"
+	bash -c "source $(XSDK_SETTINGS) && xsdk -batch -source scripts/create_fsbl_project.tcl"
 
 build/system_top.bit: build/sdk/hw_0/system_top.bit
 	cp $< $@
 
 build/boot.bin: build/sdk/fsbl/Release/fsbl.elf build/u-boot.elf
 	@echo img:{[bootloader] $^ } > build/boot.bif
-	bash -c "source  $(VIVADO_SETTINGS) && bootgen -image build/boot.bif -w -o $@"
+	bash -c "source  $(XSDK_SETTINGS) && bootgen -image build/boot.bif -w -o $@"
 
 ### MSD update firmware file ###
 
