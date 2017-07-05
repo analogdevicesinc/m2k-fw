@@ -6,7 +6,7 @@ XSDK_SETTINGS ?= ${VIVADO_SETTINGS}
 
 NCORES = $(shell nproc)
 LINUXDIR = linux
-VSUBDIRS = buildroot $(LINUXDIR)
+VSUBDIRS = hdl buildroot $(LINUXDIR)
 
 USBPID = 0xb675
 
