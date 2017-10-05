@@ -74,8 +74,8 @@ Latest binary Release : [![GitHub release](https://img.shields.io/github/release
      | uboot-env.bin | u-boot default environment in binary format created form uboot-env.txt |
      | uboot-env.txt | u-boot default environment in human readable text format |
      | zImage | Compressed Linux Kernel Image |
-     | zynq-pluto-sdr.dtb | Device Tree Blob for Rev.A |
-     | zynq-pluto-sdr-revb.dtb | Device Tree Blob for Rev.B|     
+     | zynq-m2k-reva.dtb | Device Tree Blob for Rev.A |
+     | zynq-m2k-revb.dtb | Device Tree Blob for Rev.B|     
 
  
 
