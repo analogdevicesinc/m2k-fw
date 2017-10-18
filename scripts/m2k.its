@@ -31,6 +31,14 @@
 			compression = "none";
 		};
 
+		fdt@3 {
+			description = "zynq-m2k-revc";
+			data = /incbin/("../build/zynq-m2k-revc.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+		};
+
 		fpga@1 {
 			description = "FPGA";
 			data = /incbin/("../build/system_top.bit");
@@ -130,9 +138,9 @@
 		};
 
 
-		config@7 {
-			description = "Linux with fpga RevA";
-			fdt = "fdt@1";
+		config@7 { /* Revc */
+			description = "Linux with fpga RevC";
+			fdt = "fdt@3";
 			kernel = "linux_kernel@1";
 			ramdisk = "ramdisk@1";
 			fpga = "fpga@1";
