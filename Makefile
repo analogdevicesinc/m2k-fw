@@ -18,7 +18,7 @@ ifeq (, $(shell which dfu-suffix))
 $(warning "No dfu-utils in PATH consider doing: sudo apt-get install dfu-util")
 TARGETS = build/m2k.frm build/boot.frm
 else
-TARGETS = build/m2k.dfu build/m2k.frm build/boot.dfu build/uboot-env.dfu build/boot.frm
+TARGETS = build/m2k.dfu build/m2k.frm build/boot.dfu build/mtd2.dfu build/uboot-env.dfu build/boot.frm
 endif
 
 all: $(TARGETS) zip-all jtag-bootstrap
@@ -112,6 +112,11 @@ build/%.dfu: build/%.bin
 	mv $<.tmp $@
 
 build/m2k.dfu: build/m2k.itb
+	cp $< $<.tmp
+	dfu-suffix -a $<.tmp -v 0x0456 -p $(USBPID)
+	mv $<.tmp $@
+
+build/mtd2.dfu: scripts/mtd2.img
 	cp $< $<.tmp
 	dfu-suffix -a $<.tmp -v 0x0456 -p $(USBPID)
 	mv $<.tmp $@
