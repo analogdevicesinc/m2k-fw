@@ -162,6 +162,10 @@ jtag-bootstrap: build/u-boot.elf build/sdk/hw_0/ps7_init.tcl build/sdk/hw_0/syst
 	$(CROSS_COMPILE)strip build/u-boot.elf
 	zip -j build/m2k-$@-$(VERSION).zip $^
 
+legal-info: buildroot/output/images/rootfs.cpio.gz
+	make -C buildroot legal-info
+	tar czvf build/legal-info-$(VERSION).tar.gz -C buildroot/output legal-info
+
 git-update-all:
 	git submodule update --recursive --remote
 
