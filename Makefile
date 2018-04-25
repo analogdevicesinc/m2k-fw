@@ -6,7 +6,7 @@ XSDK_SETTINGS ?= ${VIVADO_SETTINGS}
 
 NCORES = $(shell nproc)
 LINUXDIR = linux
-VSUBDIRS = hdl buildroot $(LINUXDIR)
+VSUBDIRS = hdl buildroot $(LINUXDIR) u-boot-xlnx
 
 USBPID = 0xb675
 
@@ -21,7 +21,7 @@ else
 TARGETS = build/m2k.dfu build/m2k.frm build/boot.dfu build/mtd2.dfu build/uboot-env.dfu build/boot.frm
 endif
 
-all: $(TARGETS) zip-all jtag-bootstrap
+all: $(TARGETS) zip-all jtag-bootstrap legal-info
 
 build:
 	mkdir -p $@
@@ -72,6 +72,9 @@ buildroot/output/images/rootfs.cpio.gz:
 	@echo device-fw $(VERSION)> $(CURDIR)/buildroot/board/m2k/VERSIONS
 	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(CURDIR)/buildroot/board/m2k/VERSIONS;)
 	make -C buildroot ARCH=arm zynq_m2k_defconfig
+	make -C buildroot legal-info
+	scripts/legal_info_html.sh "M2k" "$(CURDIR)/buildroot/board/m2k/VERSIONS"
+	cp build/LICENSE.html buildroot/board/m2k/msd/LICENSE.html
 	make -C buildroot TOOLCHAIN_EXTERNAL_INSTALL_DIR= ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) BUSYBOX_CONFIG_FILE=$(CURDIR)/buildroot/board/m2k/busybox-1.25.0.config all
 
 .PHONY: buildroot/output/images/rootfs.cpio.gz
@@ -163,7 +166,6 @@ jtag-bootstrap: build/u-boot.elf build/sdk/hw_0/ps7_init.tcl build/sdk/hw_0/syst
 	zip -j build/m2k-$@-$(VERSION).zip $^
 
 legal-info: buildroot/output/images/rootfs.cpio.gz
-	make -C buildroot legal-info
 	tar czvf build/legal-info-$(VERSION).tar.gz -C buildroot/output legal-info
 
 git-update-all:
