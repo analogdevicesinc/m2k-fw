@@ -39,6 +39,30 @@
 			compression = "none";
 		};
 
+		fdt@4 {
+			description = "zynq-m2k-revd";
+			data = /incbin/("../build/zynq-m2k-revd.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+		};
+
+		fdt@5 {
+			description = "zynq-m2k-reve";
+			data = /incbin/("../build/zynq-m2k-reve.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+		};
+
+		fdt@6 {
+			description = "zynq-m2k-revf";
+			data = /incbin/("../build/zynq-m2k-revf.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+		};
+
 		fpga@1 {
 			description = "FPGA";
 			data = /incbin/("../build/system_top.bit");
@@ -114,24 +138,24 @@
 		};
 
 		config@4 {
-			description = "Linux with fpga RevA";
-			fdt = "fdt@1";
+			description = "Linux with fpga RevF";
+			fdt = "fdt@6";
 			kernel = "linux_kernel@1";
 			ramdisk = "ramdisk@1";
 			fpga = "fpga@1";
 		};
 
 		config@5 {
-			description = "Linux with fpga RevA";
-			fdt = "fdt@1";
+			description = "Linux with fpga RevE";
+			fdt = "fdt@5";
 			kernel = "linux_kernel@1";
 			ramdisk = "ramdisk@1";
 			fpga = "fpga@1";
 		};
 
 		config@6 {
-			description = "Linux with fpga RevA";
-			fdt = "fdt@1";
+			description = "Linux with fpga RevD";
+			fdt = "fdt@4";
 			kernel = "linux_kernel@1";
 			ramdisk = "ramdisk@1";
 			fpga = "fpga@1";

@@ -82,7 +82,7 @@ buildroot/output/images/rootfs.cpio.gz:
 build/rootfs.cpio.gz: buildroot/output/images/rootfs.cpio.gz | build
 	cp $< $@
 
-build/m2k.itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz build/zynq-m2k-reva.dtb build/zynq-m2k-revb.dtb build/zynq-m2k-revc.dtb build/system_top.bit
+build/m2k.itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz build/zynq-m2k-reva.dtb build/zynq-m2k-revb.dtb build/zynq-m2k-revc.dtb build/zynq-m2k-revd.dtb build/zynq-m2k-reve.dtb build/zynq-m2k-revf.dtb build/system_top.bit
 	u-boot-xlnx/tools/mkimage -f scripts/m2k.its $@
 
 build/system_top.hdf:  | build
