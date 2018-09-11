@@ -1,6 +1,6 @@
 #PATH=$PATH:/opt/Xilinx/SDK/2015.4/gnu/arm/lin/bin
 
-CROSS_COMPILE ?= arm-xilinx-linux-gnueabi-
+CROSS_COMPILE ?= arm-linux-gnueabihf-
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/2017.4/settings64.sh
 XSDK_SETTINGS ?= ${VIVADO_SETTINGS}
 
