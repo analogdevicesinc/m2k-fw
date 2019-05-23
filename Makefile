@@ -1,7 +1,9 @@
 #PATH=$PATH:/opt/Xilinx/SDK/2015.4/gnu/arm/lin/bin
 
-CROSS_COMPILE ?= arm-linux-gnueabihf-
-VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/2018.2/settings64.sh
+VIVADO_VERSION ?= 2018.2
+VIVADO_TOOLCHAIN_PATH ?= /opt/Xilinx/SDK/$(VIVADO_VERSION)/gnu/aarch32/lin/gcc-arm-linux-gnueabi
+CROSS_COMPILE ?= $(VIVADO_TOOLCHAIN_PATH)/bin/arm-linux-gnueabihf-
+VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 XSDK_SETTINGS ?= ${VIVADO_SETTINGS}
 
 NCORES = $(shell nproc)
@@ -75,7 +77,7 @@ buildroot/output/images/rootfs.cpio.gz:
 	make -C buildroot legal-info
 	scripts/legal_info_html.sh "M2k" "$(CURDIR)/buildroot/board/m2k/VERSIONS"
 	cp build/LICENSE.html buildroot/board/m2k/msd/LICENSE.html
-	make -C buildroot TOOLCHAIN_EXTERNAL_INSTALL_DIR= ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) BUSYBOX_CONFIG_FILE=$(CURDIR)/buildroot/board/m2k/busybox-1.25.0.config all
+	make -C buildroot TOOLCHAIN_EXTERNAL_INSTALL_DIR=$(VIVADO_TOOLCHAIN_PATH) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) BUSYBOX_CONFIG_FILE=$(CURDIR)/buildroot/board/m2k/busybox-1.25.0.config all
 
 .PHONY: buildroot/output/images/rootfs.cpio.gz
 
