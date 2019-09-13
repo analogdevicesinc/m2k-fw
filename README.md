@@ -4,16 +4,18 @@ M2k Firmware for the [ADALM-2000](https://wiki.analog.com/university/tools/m2k "
 Latest binary Release : [![GitHub release](https://img.shields.io/github/release/analogdevicesinc/m2k-fw.svg)](https://github.com/analogdevicesinc/m2k-fw/releases/latest)
 
 * Build Instructions
- ```bash
- 
-      git clone --recursive https://github.com/analogdevicesinc/m2k-fw.git
-      cd m2k-fw
-      export CROSS_COMPILE=arm-xilinx-linux-gnueabi-
-      export PATH=$PATH:/opt/Xilinx/SDK/2017.4/gnu/aarch32/lin/gcc-arm-linux-gnueabi/bin
-      export VIVADO_SETTINGS=/opt/Xilinx/Vivado/2017.4/settings64.sh
-      make
- 
- ```
+```bash
+ sudo apt-get install git build-essential fakeroot libncurses5-dev libssl-dev ccache
+ sudo apt-get install dfu-util u-boot-tools device-tree-compiler libssl1.0-dev mtools
+ sudo apt-get install bc python cpio zip unzip rsync file wget
+ git clone --recursive https://github.com/analogdevicesinc/m2k-fw.git
+ cd m2k-fw
+ export CROSS_COMPILE=arm-xilinx-linux-gnueabi-
+ export PATH=$PATH:/opt/Xilinx/SDK/2018.3/gnu/aarch32/lin/gcc-arm-linux-gnueabi/bin
+ export VIVADO_SETTINGS=/opt/Xilinx/Vivado/2018.3/settings64.sh
+ make
+
+```
  
  * Updating your local repository 
  ```bash 
