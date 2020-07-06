@@ -10,7 +10,7 @@ Latest binary Release : [![GitHub release](https://img.shields.io/github/release
  sudo apt-get install bc python cpio zip unzip rsync file wget
  git clone --recursive https://github.com/analogdevicesinc/m2k-fw.git
  cd m2k-fw
- export CROSS_COMPILE=arm-xilinx-linux-gnueabi-
+ export CROSS_COMPILE=arm-linux-gnueabihf-
  export PATH=$PATH:/opt/Xilinx/SDK/2018.3/gnu/aarch32/lin/gcc-arm-linux-gnueabi/bin
  export VIVADO_SETTINGS=/opt/Xilinx/Vivado/2018.3/settings64.sh
  make
