@@ -1,6 +1,6 @@
 #PATH=$PATH:/opt/Xilinx/SDK/2015.4/gnu/arm/lin/bin
 
-VIVADO_VERSION ?= 2018.3
+VIVADO_VERSION ?= 2019.1
 VIVADO_TOOLCHAIN_PATH ?= /opt/Xilinx/SDK/$(VIVADO_VERSION)/gnu/aarch32/lin/gcc-arm-linux-gnueabi
 CROSS_COMPILE ?= $(VIVADO_TOOLCHAIN_PATH)/bin/arm-linux-gnueabihf-
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
