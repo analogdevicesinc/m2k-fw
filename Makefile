@@ -6,23 +6,43 @@ CROSS_COMPILE ?= $(VIVADO_TOOLCHAIN_PATH)/bin/arm-linux-gnueabihf-
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 XSDK_SETTINGS ?= ${VIVADO_SETTINGS}
 
+HAVE_VIVADO= $(shell bash -c "source $(VIVADO_SETTINGS) > /dev/null 2>&1 && vivado -version > /dev/null 2>&1 && echo 1 || echo 0")
+
 NCORES = $(shell nproc)
 VSUBDIRS = hdl buildroot linux u-boot-xlnx
 
 USBPID = 0xb675
 
 VERSION=$(shell git describe --abbrev=4 --dirty --always --tags)
+LATEST_TAG=$(shell git describe --abbrev=0 --tags)
 UBOOT_VERSION=$(shell echo -n "M2k " && cd u-boot-xlnx && git describe --abbrev=0 --dirty --always --tags)
 
 
 ifeq (, $(shell which dfu-suffix))
 $(warning "No dfu-utils in PATH consider doing: sudo apt-get install dfu-util")
-TARGETS = build/m2k.frm build/boot.frm
+TARGETS = build/m2k.frm
+ifeq (1, ${HAVE_VIVADO})
+TARGETS += build/boot.frm
+endif
 else
-TARGETS = build/m2k.dfu build/m2k.frm build/boot.dfu build/mtd2.dfu build/uboot-env.dfu build/boot.frm
+TARGETS = build/m2k.dfu build/m2k.frm build/mtd2.dfu
+ifeq (1, ${HAVE_VIVADO})
+TARGETS += build/boot.dfu build/boot.frm build/uboot-env.dfu
+endif
 endif
 
-all: $(TARGETS) zip-all jtag-bootstrap legal-info
+ifneq (1, ${HAVE_VIVADO})
+BOOTSTRAP_FILE:=m2k-jtag-bootstrap-${LATEST_TAG}.zip
+BOOTSTRAP_URL:=http://github.com/analogdevicesinc/m2k-fw/releases/download/${LATEST_TAG}/$(BOOTSTRAP_FILE)
+
+$(warning *** This build will not build the HDL from source)
+$(warning *** The HDL will be pulled from $(BOOTSTRAP_URL))
+else
+TARGETS+=jtag-bootstrap
+endif
+
+
+all: $(TARGETS) zip-all legal-info
 
 build:
 	mkdir -p $@
@@ -87,11 +107,25 @@ build/m2k.itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz build
 	u-boot-xlnx/tools/mkimage -f scripts/m2k.its $@
 
 build/system_top.hdf:  | build
+ifeq (1, ${HAVE_VIVADO})
 	bash -c "source $(VIVADO_SETTINGS) && make -C hdl m2k.standalone && cp hdl/projects/m2k/standalone/m2k.sdk/system_top.hdf $@"
 	unzip -l $@ | grep -q ps7_init || cp hdl/projects/m2k/standalone/m2k.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+else
+ifneq ($(BOOTSTRAP_URL),)
+	wget -T 3 -t 1 -N --directory-prefix build $(BOOTSTRAP_URL)
+endif
+endif
 
 build/sdk/fsbl/Release/fsbl.elf build/sdk/hw_0/system_top.bit : build/system_top.hdf
+	rm -Rf build/sdk
+ifeq (1, ${HAVE_VIVADO})
 	bash -c "source $(XSDK_SETTINGS) && xsdk -batch -source scripts/create_fsbl_project.tcl"
+else
+	rm -Rf build/downloaded_bootstrap_files
+	mkdir -p build/sdk/hw_0
+	unzip -o build/$(BOOTSTRAP_FILE) -d build/downloaded_bootstrap_files
+	cp build/downloaded_bootstrap_files/system_top.bit build/sdk/hw_0
+endif
 
 build/system_top.bit: build/sdk/hw_0/system_top.bit
 	cp $< $@
