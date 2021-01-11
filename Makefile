@@ -168,6 +168,7 @@ clean:
 	make -C u-boot-xlnx clean
 	make -C linux clean
 	make -C buildroot clean
+	make -C hdl clean
 	rm -f $(notdir $(wildcard build/*))
 	rm -rf build/*
 
