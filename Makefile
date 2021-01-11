@@ -7,8 +7,7 @@ VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 XSDK_SETTINGS ?= ${VIVADO_SETTINGS}
 
 NCORES = $(shell nproc)
-LINUXDIR = linux
-VSUBDIRS = hdl buildroot $(LINUXDIR) u-boot-xlnx
+VSUBDIRS = hdl buildroot linux u-boot-xlnx
 
 USBPID = 0xb675
 
@@ -50,22 +49,22 @@ build/uboot-env.bin: build/uboot-env.txt
 
 ### Linux ###
 
-$(LINUXDIR)/arch/arm/boot/zImage:
-	make -C $(LINUXDIR) ARCH=arm zynq_m2k_defconfig
-	make -C $(LINUXDIR) -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
+linux/arch/arm/boot/zImage:
+	make -C linux ARCH=arm zynq_m2k_defconfig
+	make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
 
-.PHONY: $(LINUXDIR)/arch/arm/boot/zImage
+.PHONY: linux/arch/arm/boot/zImage
 
 
-build/zImage: $(LINUXDIR)/arch/arm/boot/zImage  | build
+build/zImage: linux/arch/arm/boot/zImage  | build
 	cp $< $@
 
 ### Device Tree ###
 
-$(LINUXDIR)/arch/arm/boot/dts/%.dtb: $(LINUXDIR)/arch/arm/boot/dts/%.dts $(LINUXDIR)/arch/arm/boot/dts/zynq-m2k.dtsi $(LINUXDIR)/arch/arm/boot/dts/zynq-7000.dtsi
-	make -C $(LINUXDIR) -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) $(notdir $@)
+linux/arch/arm/boot/dts/%.dtb: linux/arch/arm/boot/dts/%.dts linux/arch/arm/boot/dts/zynq-m2k.dtsi linux/arch/arm/boot/dts/zynq-7000.dtsi
+	make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) $(notdir $@)
 
-build/%.dtb: $(LINUXDIR)/arch/arm/boot/dts/%.dtb | build
+build/%.dtb: linux/arch/arm/boot/dts/%.dtb | build
 	cp $< $@
 
 ### Buildroot ###
@@ -133,7 +132,7 @@ clean-build:
 
 clean:
 	make -C u-boot-xlnx clean
-	make -C $(LINUXDIR) clean
+	make -C linux clean
 	make -C buildroot clean
 	rm -f $(notdir $(wildcard build/*))
 	rm -rf build/*
