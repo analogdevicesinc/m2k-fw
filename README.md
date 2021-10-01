@@ -11,8 +11,8 @@ Latest binary Release : [![GitHub release](https://img.shields.io/github/release
  git clone --recursive https://github.com/analogdevicesinc/m2k-fw.git
  cd m2k-fw
  export CROSS_COMPILE=arm-linux-gnueabihf-
- export PATH=$PATH:/opt/Xilinx/SDK/2018.3/gnu/aarch32/lin/gcc-arm-linux-gnueabi/bin
- export VIVADO_SETTINGS=/opt/Xilinx/Vivado/2018.3/settings64.sh
+ export PATH=$PATH:/opt/Xilinx/SDK/2019.1/gnu/aarch32/lin/gcc-arm-linux-gnueabi/bin
+ export VIVADO_SETTINGS=/opt/Xilinx/Vivado/2019.1/settings64.sh
  make
 
 ```
@@ -25,31 +25,42 @@ Latest binary Release : [![GitHub release](https://img.shields.io/github/release
 * Build Artifacts
  ```bash
       michael@HAL9000:~/devel/m2k-fw$ ls -AGhl build
-	-rw-rw-r-- 1 michael   69 Mai  8 11:36 boot.bif
-	-rw-rw-r-- 1 michael 446K Mai  8 11:36 boot.bin
-	-rw-rw-r-- 1 michael 446K Mai  8 11:36 boot.dfu
-	-rw-rw-r-- 1 michael 575K Mai  8 11:36 boot.frm
-	-rw-rw-r-- 1 michael 181M Mai  8 11:36 legal-info-v0.20.tar.gz
-	-rw-rw-r-- 1 michael 461K Mai  8 11:35 LICENSE.html
-	-rw-rw-r-- 1 michael 9,0M Mai  8 11:36 m2k.dfu
-	-rw-rw-r-- 1 michael 9,0M Mai  8 11:36 m2k.frm
-	-rw-rw-r-- 1 michael   33 Mai  8 11:36 m2k.frm.md5
-	-rw-rw-r-- 1 michael  17M Mai  8 11:36 m2k-fw-v0.20.zip
-	-rw-rw-r-- 1 michael 9,0M Mai  8 11:36 m2k.itb
-	-rw-rw-r-- 1 michael 497K Mai  8 11:36 m2k-jtag-bootstrap-v0.20.zip
-	-rw-r--r-- 1 michael 897K Mai  8 11:36 mtd2.dfu
-	-rw-r--r-- 1 michael 4,7M Mai  8 11:35 rootfs.cpio.gz
-	drwxrwxr-x 6 michael 4,0K Mai  8 11:36 sdk
-	-rw-rw-r-- 1 michael 950K Mai  8 11:36 system_top.bit
-	-rw-rw-r-- 1 michael 414K Mai  8 11:35 system_top.hdf
-	-rwxrwxr-x 1 michael 409K Mai  8 11:36 u-boot.elf
-	-rw-rw---- 1 michael 128K Mai  8 11:36 uboot-env.bin
-	-rw-rw---- 1 michael 129K Mai  8 11:36 uboot-env.dfu
-	-rw-rw-r-- 1 michael 4,7K Mai  8 11:36 uboot-env.txt
-	-rwxrwxr-x 1 michael 3,4M Mai  8 11:33 zImage
-	-rw-rw-r-- 1 michael  15K Mai  8 11:35 zynq-m2k-reva.dtb
-	-rw-rw-r-- 1 michael  15K Mai  8 11:35 zynq-m2k-revb.dtb
-	-rw-rw-r-- 1 michael  15K Mai  8 11:35 zynq-m2k-revc.dtb
+      total 318M
+      -rw-rw-r-- 1 michael   69 Okt  1 14:08 boot.bif
+      -rw-rw-r-- 1 michael 459K Okt  1 14:08 boot.bin
+      -rw-rw-r-- 1 michael 459K Okt  1 14:08 boot.dfu
+      -rw-rw-r-- 1 michael 588K Okt  1 14:08 boot.frm
+      -rw-rw-r-- 1 michael 252M Okt  1 14:08 legal-info-v0.28.tar.gz
+      -rw-rw-r-- 1 michael 490K Okt  1 13:48 LICENSE.html
+      -rw-rw-r-- 1 michael 9,8M Okt  1 14:08 m2k.dfu
+      -rw-rw-r-- 1 michael 9,8M Okt  1 14:08 m2k.frm
+      -rw-rw-r-- 1 michael   33 Okt  1 14:08 m2k.frm.md5
+      -rw-rw-r-- 1 michael  19M Okt  1 14:08 m2k-fw-v0.28.zip
+      -rw-rw-r-- 1 michael 9,8M Okt  1 14:08 m2k.itb
+      -rw-rw-r-- 1 michael 502K Okt  1 14:08 m2k-jtag-bootstrap-v0.28.zip
+      -rw-r--r-- 1 michael 897K Okt  1 14:08 mtd2.dfu
+      -rw-rw-r-- 1 michael 444K Okt  1 14:08 ps7_init.c
+      -rw-rw-r-- 1 michael 443K Okt  1 14:08 ps7_init_gpl.c
+      -rw-rw-r-- 1 michael 4,2K Okt  1 14:08 ps7_init_gpl.h
+      -rw-rw-r-- 1 michael 4,8K Okt  1 14:08 ps7_init.h
+      -rw-rw-r-- 1 michael 2,4M Okt  1 14:08 ps7_init.html
+      -rw-rw-r-- 1 michael  31K Okt  1 14:08 ps7_init.tcl
+      -rw-r--r-- 1 michael 5,2M Okt  1 13:57 rootfs.cpio.gz
+      drwxrwxr-x 6 michael 4,0K Okt  1 14:08 sdk
+      -rw-rw-r-- 1 michael 949K Okt  1 14:08 system_top.bit
+      -rw-rw-r-- 1 michael 412K Okt  1 14:08 system_top.hdf
+      -rwxrwxr-x 1 michael 438K Okt  1 14:08 u-boot.elf
+      -rw-rw---- 1 michael 128K Okt  1 14:08 uboot-env.bin
+      -rw-rw---- 1 michael 129K Okt  1 14:08 uboot-env.dfu
+      -rw-rw-r-- 1 michael 6,5K Okt  1 14:08 uboot-env.txt
+      -rwxrwxr-x 1 michael 3,7M Okt  1 13:45 zImage
+      -rw-rw-r-- 1 michael  17K Okt  1 13:57 zynq-m2k-reva.dtb
+      -rw-rw-r-- 1 michael  17K Okt  1 13:57 zynq-m2k-revb.dtb
+      -rw-rw-r-- 1 michael  17K Okt  1 13:57 zynq-m2k-revc.dtb
+      -rw-rw-r-- 1 michael  17K Okt  1 13:57 zynq-m2k-revd.dtb
+      -rw-rw-r-- 1 michael  17K Okt  1 13:58 zynq-m2k-reve.dtb
+      -rw-rw-r-- 1 michael  17K Okt  1 13:58 zynq-m2k-revf.dtb
+
  ```
  
  * Main targets
