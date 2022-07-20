@@ -1,6 +1,6 @@
 #PATH=$PATH:/opt/Xilinx/SDK/2015.4/gnu/arm/lin/bin
 
-VIVADO_VERSION ?= 2019.1
+VIVADO_VERSION ?= 2021.1
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 XSDK_SETTINGS ?= ${VIVADO_SETTINGS}
 
@@ -111,9 +111,9 @@ build/rootfs.cpio.gz: buildroot/output/images/rootfs.cpio.gz | build
 build/m2k.itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz build/zynq-m2k-reva.dtb build/zynq-m2k-revb.dtb build/zynq-m2k-revc.dtb build/zynq-m2k-revd.dtb build/zynq-m2k-reve.dtb build/zynq-m2k-revf.dtb build/system_top.bit
 	u-boot-xlnx/tools/mkimage -f scripts/m2k.its $@
 
-build/system_top.hdf:  | build
+build/system_top.xsa:  | build
 ifeq (1, ${HAVE_VIVADO})
-	bash -c "source $(VIVADO_SETTINGS) && make -C hdl m2k.standalone && cp hdl/projects/m2k/standalone/m2k.sdk/system_top.hdf $@"
+	bash -c "source $(VIVADO_SETTINGS) && make -C hdl m2k.standalone && cp hdl/projects/m2k/standalone/m2k.sdk/system_top.xsa $@"
 	unzip -l $@ | grep -q ps7_init || cp hdl/projects/m2k/standalone/m2k.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
 else
 ifneq ($(BOOTSTRAP_URL),)
@@ -121,19 +121,16 @@ ifneq ($(BOOTSTRAP_URL),)
 endif
 endif
 
-build/sdk/fsbl/Release/fsbl.elf build/sdk/hw_0/system_top.bit : build/system_top.hdf
+build/sdk/fsbl/Release/fsbl.elf build/system_top.bit: build/system_top.xsa
 	rm -Rf build/sdk
 ifeq (1, ${HAVE_VIVADO})
-	bash -c "source $(XSDK_SETTINGS) && xsdk -batch -source scripts/create_fsbl_project.tcl"
+	bash -c "source $(XSDK_SETTINGS) && xsct scripts/create_fsbl_project.tcl"
 else
 	rm -Rf build/downloaded_bootstrap_files
-	mkdir -p build/sdk/hw_0
 	unzip -o build/$(BOOTSTRAP_FILE) -d build/downloaded_bootstrap_files
-	cp build/downloaded_bootstrap_files/system_top.bit build/sdk/hw_0
+	cp build/downloaded_bootstrap_files/system_top.bit build/
 endif
 
-build/system_top.bit: build/sdk/hw_0/system_top.bit
-	cp $< $@
 
 build/boot.bin: build/sdk/fsbl/Release/fsbl.elf build/u-boot.elf
 	@echo img:{[bootloader] $^ } > build/boot.bif
@@ -203,7 +200,7 @@ dfu-ram: build/m2k.dfu
 	dfu-util -D build/m2k.dfu -a firmware.dfu
 	dfu-util -e
 
-jtag-bootstrap: build/u-boot.elf build/sdk/hw_0/ps7_init.tcl build/sdk/hw_0/system_top.bit scripts/run.tcl
+jtag-bootstrap: build/u-boot.elf build/ps7_init.tcl build/system_top.bit scripts/run.tcl
 	$(CROSS_COMPILE)strip build/u-boot.elf
 	zip -j build/m2k-$@-$(VERSION).zip $^
 
