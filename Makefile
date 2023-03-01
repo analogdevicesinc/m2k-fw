@@ -7,7 +7,7 @@ XSDK_SETTINGS ?= ${VIVADO_SETTINGS}
 HAVE_VIVADO= $(shell bash -c "source $(VIVADO_SETTINGS) > /dev/null 2>&1 && vivado -version > /dev/null 2>&1 && echo 1 || echo 0")
 
 ifeq (1, ${HAVE_VIVADO})
-VIVADO_TOOLCHAIN_PATH ?= /opt/Xilinx/SDK/$(VIVADO_VERSION)/gnu/aarch32/lin/gcc-arm-linux-gnueabi
+VIVADO_TOOLCHAIN_PATH ?= /opt/Xilinx/Vitis/$(VIVADO_VERSION)/gnu/aarch32/lin/gcc-arm-linux-gnueabi
 CROSS_COMPILE ?= $(VIVADO_TOOLCHAIN_PATH)/bin/arm-linux-gnueabihf-
 else
 CROSS_COMPILE ?= arm-linux-gnueabihf-
