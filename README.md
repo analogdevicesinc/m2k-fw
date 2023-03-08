@@ -1,7 +1,9 @@
 # M2k-fw
 M2k Firmware for the [ADALM-2000](https://wiki.analog.com/university/tools/m2k "ADALM-2000 Wiki Page") Active Learning Module
 
-Latest binary Release : [![GitHub release](https://img.shields.io/github/release/analogdevicesinc/m2k-fw.svg)](https://github.com/analogdevicesinc/m2k-fw/releases/latest)
+Latest binary Release : [![GitHub Release](https://img.shields.io/github/release/analogdevicesinc/m2k-fw.svg)](https://github.com/analogdevicesinc/m2k-fw/releases/latest)  [![Github Releases](https://img.shields.io/github/downloads/analogdevicesinc/m2k-fw/total.svg)](https://github.com/analogdevicesinc/m2k-fw/releases/latest)
+
+Firmware License : [![Many Licenses](https://img.shields.io/badge/license-LGPL2+-blue.svg)](https://github.com/analogdevicesinc/m2k-fw/blob/master/LICENSE.md)  [![Many License](https://img.shields.io/badge/license-GPL2+-blue.svg)](https://github.com/analogdevicesinc/m2k-fw/blob/master/LICENSE.md)  [![Many License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/analogdevicesinc/m2k-fw/blob/master/LICENSE.md)  [![Many License](https://img.shields.io/badge/license-apache-blue.svg)](https://github.com/analogdevicesinc/m2k-fw/blob/master/LICENSE.md) and many others.
 
 * Build Instructions
 ```bash
