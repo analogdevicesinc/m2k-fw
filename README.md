@@ -12,8 +12,6 @@ Firmware License : [![Many Licenses](https://img.shields.io/badge/license-LGPL2+
  sudo apt-get install bc python cpio zip unzip rsync file wget
  git clone --recursive https://github.com/analogdevicesinc/m2k-fw.git
  cd m2k-fw
- export CROSS_COMPILE=arm-linux-gnueabihf-
- export PATH=$PATH:/opt/Xilinx/Vitis/2021.2/gnu/aarch32/lin/gcc-arm-linux-gnueabi/bin
  export VIVADO_SETTINGS=/opt/Xilinx/Vivado/2021.2/settings64.sh
  make
 

@@ -1,17 +1,14 @@
-#PATH=$PATH:/opt/Xilinx/SDK/2015.4/gnu/arm/lin/bin
-
 VIVADO_VERSION ?= 2021.2
+
 VIVADO_SETTINGS ?= /opt/Xilinx/Vivado/$(VIVADO_VERSION)/settings64.sh
 XSDK_SETTINGS ?= ${VIVADO_SETTINGS}
 
-HAVE_VIVADO= $(shell bash -c "source $(VIVADO_SETTINGS) > /dev/null 2>&1 && vivado -version > /dev/null 2>&1 && echo 1 || echo 0")
+# Use Buildroot External Linaro GCC 7.3-2018.05 arm-linux-gnueabihf Toolchain
+CROSS_COMPILE = arm-linux-gnueabihf-
+TOOLS_PATH = PATH="$(CURDIR)/buildroot/output/host/bin:$(CURDIR)/buildroot/output/host/sbin:$(PATH)"
+TOOLCHAIN = $(CURDIR)/buildroot/output/host/bin/$(CROSS_COMPILE)gcc
 
-ifeq (1, ${HAVE_VIVADO})
-VIVADO_TOOLCHAIN_PATH ?= /opt/Xilinx/Vitis/$(VIVADO_VERSION)/gnu/aarch32/lin/gcc-arm-linux-gnueabi
-CROSS_COMPILE ?= $(VIVADO_TOOLCHAIN_PATH)/bin/arm-linux-gnueabihf-
-else
-CROSS_COMPILE ?= arm-linux-gnueabihf-
-endif
+HAVE_VIVADO= $(shell bash -c "source $(VIVADO_SETTINGS) > /dev/null 2>&1 && vivado -version > /dev/null 2>&1 && echo 1 || echo 0")
 
 NCORES = $(shell nproc)
 VSUBDIRS = hdl buildroot linux u-boot-xlnx
@@ -49,6 +46,10 @@ endif
 
 all: $(TARGETS) zip-all legal-info
 
+TOOLCHAIN:
+	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
+	make -C buildroot toolchain
+
 build:
 	mkdir -p $@
 
@@ -58,8 +59,8 @@ build:
 ### u-boot ###
 
 u-boot-xlnx/u-boot u-boot-xlnx/tools/mkimage:
-	make -C u-boot-xlnx ARCH=arm zynq_m2k_defconfig
-	make -C u-boot-xlnx ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) UBOOTVERSION="$(UBOOT_VERSION)"
+	$(TOOLS_PATH) make -C u-boot-xlnx ARCH=arm zynq_m2k_defconfig
+	$(TOOLS_PATH) make -C u-boot-xlnx ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) UBOOTVERSION="$(UBOOT_VERSION)"
 
 .PHONY: u-boot-xlnx/u-boot
 
@@ -67,7 +68,7 @@ build/u-boot.elf: u-boot-xlnx/u-boot | build
 	cp $< $@
 
 build/uboot-env.txt: u-boot-xlnx/u-boot | build
-	CROSS_COMPILE=$(CROSS_COMPILE) scripts/get_default_envs.sh > $@
+	$(TOOLS_PATH) CROSS_COMPILE=$(CROSS_COMPILE) scripts/get_default_envs.sh > $@
 
 build/uboot-env.bin: build/uboot-env.txt
 	u-boot-xlnx/tools/mkenvimage -s 0x20000 -o $@ $<
@@ -75,8 +76,8 @@ build/uboot-env.bin: build/uboot-env.txt
 ### Linux ###
 
 linux/arch/arm/boot/zImage:
-	make -C linux ARCH=arm zynq_m2k_defconfig
-	make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
+	$(TOOLS_PATH) make -C linux ARCH=arm zynq_m2k_defconfig
+	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
 
 .PHONY: linux/arch/arm/boot/zImage
 
@@ -87,7 +88,7 @@ build/zImage: linux/arch/arm/boot/zImage  | build
 ### Device Tree ###
 
 linux/arch/arm/boot/dts/%.dtb: linux/arch/arm/boot/dts/%.dts linux/arch/arm/boot/dts/zynq-m2k.dtsi linux/arch/arm/boot/dts/zynq-7000.dtsi
-	make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) $(notdir $@)
+	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) $(notdir $@)
 
 build/%.dtb: linux/arch/arm/boot/dts/%.dtb | build
 	cp $< $@
@@ -101,7 +102,7 @@ buildroot/output/images/rootfs.cpio.gz:
 	make -C buildroot legal-info
 	scripts/legal_info_html.sh "M2k" "$(CURDIR)/buildroot/board/m2k/VERSIONS"
 	cp build/LICENSE.html buildroot/board/m2k/msd/LICENSE.html
-	make -C buildroot TOOLCHAIN_EXTERNAL_INSTALL_DIR=$(VIVADO_TOOLCHAIN_PATH) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) BUSYBOX_CONFIG_FILE=$(CURDIR)/buildroot/board/m2k/busybox-1.25.0.config all
+	make -C buildroot ARCH=arm BUSYBOX_CONFIG_FILE=$(CURDIR)/buildroot/board/m2k/busybox-1.25.0.config all
 
 .PHONY: buildroot/output/images/rootfs.cpio.gz
 
@@ -201,7 +202,7 @@ dfu-ram: build/m2k.dfu
 	dfu-util -e
 
 jtag-bootstrap: build/u-boot.elf build/ps7_init.tcl build/system_top.bit scripts/run.tcl
-	$(CROSS_COMPILE)strip build/u-boot.elf
+	$(TOOLS_PATH) $(CROSS_COMPILE)strip build/u-boot.elf
 	zip -j build/m2k-$@-$(VERSION).zip $^
 
 sysroot: buildroot/output/images/rootfs.cpio.gz
