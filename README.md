@@ -12,11 +12,17 @@ Firmware License : [![Many Licenses](https://img.shields.io/badge/license-LGPL2+
  sudo apt-get install bc python cpio zip unzip rsync file wget
  git clone --recursive https://github.com/analogdevicesinc/m2k-fw.git
  cd m2k-fw
- export VIVADO_SETTINGS=/opt/Xilinx/Vivado/2021.2/settings64.sh
+ export VIVADO_SETTINGS=/opt/Xilinx/Vivado/2022.2/settings64.sh
  make
 
 ```
- 
+Due to incompatibility between the AMD/Xilinx GCC toolchain supplied with Vivado/Vitis and Buildroot.
+This project switched to Buildroot external Toolchain: Linaro GCC 7.3-2018.05 7.3.1
+
+https://releases.linaro.org/components/toolchain/binaries/7.3-2018.05/arm-linux-gnueabihf/
+
+This toolchain is used to build: Buildroot, Linux and u-boot
+
  * Updating your local repository 
  ```bash 
       git pull --recurse-submodules
