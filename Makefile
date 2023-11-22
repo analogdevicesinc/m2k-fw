@@ -47,7 +47,7 @@ endif
 all: $(TARGETS) zip-all legal-info
 
 TOOLCHAIN:
-	make -C buildroot ARCH=arm zynq_$(TARGET)_defconfig
+	make -C buildroot ARCH=arm zynq_m2k_defconfig
 	make -C buildroot toolchain
 
 build:
@@ -58,8 +58,8 @@ build:
 
 ### u-boot ###
 
-u-boot-xlnx/u-boot u-boot-xlnx/tools/mkimage:
-	$(TOOLS_PATH) make -C u-boot-xlnx ARCH=arm zynq_m2k_defconfig
+u-boot-xlnx/u-boot u-boot-xlnx/tools/mkimage: TOOLCHAIN
+	$(TOOLS_PATH) make -C u-boot-xlnx ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_m2k_defconfig
 	$(TOOLS_PATH) make -C u-boot-xlnx ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) UBOOTVERSION="$(UBOOT_VERSION)"
 
 .PHONY: u-boot-xlnx/u-boot
@@ -67,7 +67,7 @@ u-boot-xlnx/u-boot u-boot-xlnx/tools/mkimage:
 build/u-boot.elf: u-boot-xlnx/u-boot | build
 	cp $< $@
 
-build/uboot-env.txt: u-boot-xlnx/u-boot | build
+build/uboot-env.txt: u-boot-xlnx/u-boot TOOLCHAIN | build
 	$(TOOLS_PATH) CROSS_COMPILE=$(CROSS_COMPILE) scripts/get_default_envs.sh > $@
 
 build/uboot-env.bin: build/uboot-env.txt
@@ -75,8 +75,8 @@ build/uboot-env.bin: build/uboot-env.txt
 
 ### Linux ###
 
-linux/arch/arm/boot/zImage:
-	$(TOOLS_PATH) make -C linux ARCH=arm zynq_m2k_defconfig
+linux/arch/arm/boot/zImage: TOOLCHAIN
+	$(TOOLS_PATH) make -C linux CROSS_COMPILE=$(CROSS_COMPILE) ARCH=arm zynq_m2k_defconfig
 	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
 
 .PHONY: linux/arch/arm/boot/zImage
@@ -87,7 +87,7 @@ build/zImage: linux/arch/arm/boot/zImage  | build
 
 ### Device Tree ###
 
-linux/arch/arm/boot/dts/%.dtb: linux/arch/arm/boot/dts/%.dts linux/arch/arm/boot/dts/zynq-m2k.dtsi linux/arch/arm/boot/dts/zynq-7000.dtsi
+linux/arch/arm/boot/dts/%.dtb: TOOLCHAIN linux/arch/arm/boot/dts/%.dts linux/arch/arm/boot/dts/zynq-m2k.dtsi linux/arch/arm/boot/dts/zynq-7000.dtsi
 	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) $(notdir $@)
 
 build/%.dtb: linux/arch/arm/boot/dts/%.dtb | build
