@@ -87,10 +87,10 @@ build/zImage: linux/arch/arm/boot/zImage  | build
 
 ### Device Tree ###
 
-linux/arch/arm/boot/dts/%.dtb: TOOLCHAIN linux/arch/arm/boot/dts/%.dts linux/arch/arm/boot/dts/zynq-m2k.dtsi linux/arch/arm/boot/dts/zynq-7000.dtsi
-	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) $(notdir $@)
+linux/arch/arm/boot/dts/xilinx/%.dtb: TOOLCHAIN linux/arch/arm/boot/dts/xilinx/%.dts linux/arch/arm/boot/dts/xilinx/zynq-m2k.dtsi linux/arch/arm/boot/dts/xilinx/zynq-7000.dtsi
+	$(TOOLS_PATH) make -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) xilinx/$(notdir $@)
 
-build/%.dtb: linux/arch/arm/boot/dts/%.dtb | build
+build/%.dtb: linux/arch/arm/boot/dts/xilinx/%.dtb | build
 	cp $< $@
 
 ### Buildroot ###
@@ -116,7 +116,7 @@ build/m2k.itb: u-boot-xlnx/tools/mkimage build/zImage build/rootfs.cpio.gz build
 
 build/system_top.xsa:  | build
 ifeq (1, ${HAVE_VIVADO})
-	bash -c "source $(VIVADO_SETTINGS) && make -C hdl m2k.standalone && cp hdl/projects/m2k/standalone/m2k.sdk/system_top.xsa $@"
+	bash -c "source $(VIVADO_SETTINGS) && make -C hdl m2k && cp hdl/projects/m2k/m2k.sdk/system_top.xsa $@"
 	unzip -l $@ | grep -q ps7_init || cp hdl/projects/m2k/standalone/m2k.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
 else
 ifneq ($(BOOTSTRAP_URL),)
