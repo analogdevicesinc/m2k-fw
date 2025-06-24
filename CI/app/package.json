@@ -1,0 +1,30 @@
+{
+  "name": "m2k-fw",
+  "version": "1.0.0",
+  "description": "CI for m2k-fw",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt",
+    "bundle": "npm run format:fix && npm run package",
+    "package": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt && npm run format:fix",
+    "format:fix": "npx prettier --write .",
+    "format:check": "npx prettier --check ."
+  },
+  "author": "Iuliu Popovici <iuliu-antoniu.popovici@analog.com>",
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/exec": "^1.1.1",
+    "@octokit/rest": "^22.0.0",
+    "axios": "^1.9.0",
+    "node-fetch": "^3.3.2",
+    "typescript": "^5.4.2",
+    "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@vercel/ncc": "^0.38.1",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2"
+  }
+}

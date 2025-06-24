@@ -1,0 +1,50 @@
+##
+# Copyright (c) 2025 Analog Devices, Inc. All Rights Reserved.
+# This software is proprietary and confidential to Analog Devices, Inc. and its licensors.
+##
+
+name: 'Get response from triggered workflow'
+
+run-name: ${{ inputs.run-name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      run-name:
+        required: true
+        type: string
+      log-message:
+        required: true
+        type: string
+
+description:
+  'Workflow to get response from m2k external trigger'
+
+jobs:
+  get-response:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Get response
+        shell: sh
+        timeout-minutes: 720
+        run: |
+            log_message=$(echo ${{ inputs.log-message }} | sed "s#_# #g")
+            echo "${log_message}"
+            sleep 7200   # wait for maximum 2 hours for the run to complete
+        continue-on-error: true
+  set-successful:
+    if: ${{ cancelled() }}
+    needs: get-response
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set workflow run as successful
+        run: exit 0
+  set-failed:
+    if: ${{ !cancelled() }}
+    needs: get-response
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set workflow run as failed
+        run: exit 1

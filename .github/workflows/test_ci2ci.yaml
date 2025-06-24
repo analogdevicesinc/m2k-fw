@@ -1,0 +1,69 @@
+##
+# Copyright (c) 2025 Analog Devices, Inc. All Rights Reserved.
+# This software is proprietary and confidential to Analog Devices, Inc. and its licensors.
+##
+
+name: Test run for ci-2-ci monitoring
+
+description:
+  'Testing communications between CIs from this repository'
+
+on:
+  pull_request:
+    branches:
+      - build-action-implementation
+    paths:
+      - '.github/workflows/test_ci2ci.yaml'
+      - 'CI/app/**'
+
+env:
+  HDL_PROJECT_NAME: m2k-fw
+  GITHUB_RUN_ID: ${{ github.run_id }}
+
+jobs:
+  monitor-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Setup NODE
+        uses: actions/setup-node@v3
+      - name: Trigger build response
+        uses: benc-uk/workflow-dispatch@v1.2.4
+        with:
+          workflow: get-response.yml
+          repo: Lewluu/m2k-fw
+          inputs: '{ "run-name": "HDL-Build-for-${{ env.HDL_PROJECT_NAME }}_${{ env.GITHUB_RUN_ID }}", "log-message": "Triggered_from_ci-2-ci_monitoring_run_${{ env.GITHUB_RUN_ID }}" }'
+          ref: 'ci-2-ci-monitor'
+          token: ${{ secrets.GH_OS_DISPATCH }}
+      - name: Trigger build log
+        uses: benc-uk/workflow-dispatch@v1.2.4
+        with:
+          workflow: get-log.yml
+          repo: Lewluu/m2k-fw
+          inputs: '{ "run-name": "Output-for-HDL-Build-for-${{ env.HDL_PROJECT_NAME }}_${{ env.GITHUB_RUN_ID }}", "log-message": "Triggered_from_ci-2-ci_monitoring_run_${{ env.GITHUB_RUN_ID }}" }'
+          ref: 'ci-2-ci-monitor'
+          token: ${{ secrets.GH_OS_DISPATCH }}
+      - name: Trigger publish response
+        uses: benc-uk/workflow-dispatch@v1.2.4
+        with:
+          workflow: get-response.yml
+          repo: Lewluu/m2k-fw
+          inputs: '{ "run-name": "HDL-Publish-for-${{ env.HDL_PROJECT_NAME }}_${{ env.GITHUB_RUN_ID }}", "log-message": "Triggered_from_ci-2-ci_monitoring_run_${{ env.GITHUB_RUN_ID }}" }'
+          ref: 'ci-2-ci-monitor'
+          token: ${{ secrets.GH_OS_DISPATCH }}
+      - name: Trigger publish log
+        uses: benc-uk/workflow-dispatch@v1.2.4
+        with:
+          workflow: get-log.yml
+          repo: Lewluu/m2k-fw
+          inputs: '{ "run-name": "Output-for-HDL-Publish-for-${{ env.HDL_PROJECT_NAME }}_${{ env.GITHUB_RUN_ID }}", "log-message": "Triggered_from_ci-2-ci_monitoring_run_${{ env.GITHUB_RUN_ID }}" }'
+          ref: 'ci-2-ci-monitor'
+          token: ${{ secrets.GH_OS_DISPATCH }}
+      - name: Start monitoring
+        timeout-minutes: 720
+        shell: sh
+        run: |
+          node CI/app/dist/index.js
+        env:
+          GH_OS_TOKEN: ${{ secrets.GH_OS_DISPATCH }}

@@ -1,0 +1,36 @@
+##
+# Copyright (c) 2025 Analog Devices, Inc. All Rights Reserved.
+# This software is proprietary and confidential to Analog Devices, Inc. and its licensors.
+##
+
+name: '[Build]: Create trigger request'
+
+description:
+  'Workflow to trigger m2k build'
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  GH_OS_TOKEN: ${{ secrets.GH_OS_DISPATCH }}
+  GITHUB_RUN_ID: ${{ github.run_id }}
+  HDL_PROJECT_NAME: m2k-fw
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Get external status
+        run: |
+          node CI/app/dist/index.js

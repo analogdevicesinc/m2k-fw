@@ -1,0 +1,48 @@
+##
+# Copyright (c) 2025 Analog Devices, Inc. All Rights Reserved.
+# This software is proprietary and confidential to Analog Devices, Inc. and its licensors.
+##
+
+name: Test run
+
+description:
+  'Testing API/webhooks call for workflows'
+
+on:
+  pull_request:
+    branches:
+      - build-action-implementation-remove
+    paths:
+      - '.github/workflows/test_run.yaml'
+  push:
+    branches:
+      - build-action-implementation-remove
+    paths:
+      - '.github/workflows/test_run.yaml'
+
+env:
+  TEST_ENV_VALUE_1: test_value1
+  TEST_ENV_VALUE_2: test_value2
+
+jobs:
+  job_1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Job 1 run
+        shell: sh
+        run: |
+          echo "Hello from job 1"
+  job_2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Job 2 run
+        shell: sh
+        run: |
+          echo "Hello from job 2"
+  job_3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Job 3 run - sleeping
+        shell: sh
+        run: |
+          echo "Hello from job 3"
