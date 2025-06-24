@@ -1,0 +1,50 @@
+##
+# Copyright (c) 2025 Analog Devices, Inc. All Rights Reserved.
+# This software is proprietary and confidential to Analog Devices, Inc. and its licensors.
+##
+
+name: '[Build]: Create trigger request'
+
+description:
+  'Workflow to trigger m2k build'
+
+on:
+  workflow_dispatch:
+    inputs:
+      vivado-version:
+        required: false
+        type: string
+        default: 2023.2
+      package-version:
+        required: true
+        type: string
+        description: 
+          'Can contain any characters or numbers (execpt: /, \). Make sure it is unique as possible to not override.'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Update versions
+        shell: sh
+        id: build-versions
+        run: |
+          echo "Package Version: ${{ inputs.package-version }}"
+          echo "Vivado Version: ${{ inputs.vivado-version }}"
+
+          echo "package_version=${{ inputs.package-version }}" >> $GITHUB_OUTPUT
+          echo "vivado_version=${{ inputs.vivado-version }}" >> $GITHUB_OUTPUT
+      - name: Trigger Build
+        shell: sh
+        run: |
+          ./CI/trigger-workflow.sh
+        env:
+          PRIVATE_ORG: ${{ secrets.PRIVATE_ORG }}
+          PRIVATE_REPO: ${{ secrets.PRIVATE_REPO }}
+          PRIVATE_WORKFLOW: ${{ secrets.PRIVATE_WORKFLOW }}
+          GH_TRIGGER_TOKEN: ${{ secrets.GH_TRIGGER_TOKEN }}
+          VIVADO_VERSION: ${{ steps.build-versions.outputs.vivado_version }}
+          PACKAGE_VERSION: ${{ steps.build-versions.outputs.package_version }}
+          TRIGGER_ID: ${{ github.run_id }}      # current workflow run id to detect it on further requests

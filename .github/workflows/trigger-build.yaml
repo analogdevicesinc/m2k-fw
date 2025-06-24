@@ -1,0 +1,56 @@
+##
+# Copyright (c) 2025 Analog Devices, Inc. All Rights Reserved.
+# This software is proprietary and confidential to Analog Devices, Inc. and its licensors.
+##
+
+name: '[Build]: Create trigger request'
+
+description:
+  'Workflow to trigger m2k build'
+
+on:
+  push:
+    branches:
+      - master
+      - build-action-implementation
+    paths:
+      - ".github/workflows/trigger-build.yml"
+      - "CI/**"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/trigger-build.yml"
+      - "CI/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Update versions
+        shell: sh
+        id: build-versions
+        run: |
+          timestamp=$(date '+%d-%m-%Y_%H-%M-%S')
+          package_version=$(echo "${timestamp}.m2k-fw")
+          vivado_version=$(cat Makefile | awk 'NR==1{print $NF}')
+
+          echo "Package Version: ${package_version}"
+          echo "Vivado Version: ${vivado_version}"
+
+          echo "package_version=${package_version}" >> $GITHUB_OUTPUT
+          echo "vivado_version=${vivado_version}" >> $GITHUB_OUTPUT
+      - name: Trigger Build
+        shell: sh
+        run: |
+          ./CI/trigger-workflow.sh
+        env:
+          PRIVATE_ORG: ${{ secrets.PRIVATE_ORG }}
+          PRIVATE_REPO: ${{ secrets.PRIVATE_REPO }}
+          PRIVATE_WORKFLOW: ${{ secrets.PRIVATE_WORKFLOW }}
+          GH_TRIGGER_TOKEN: ${{ secrets.GH_TRIGGER_TOKEN }}
+          VIVADO_VERSION: ${{ steps.build-versions.outputs.vivado_version }}
+          PACKAGE_VERSION: ${{ steps.build-versions.outputs.package_version }}
+          TRIGGER_ID: ${{ github.run_id }}      # current workflow run id to detect it on further requests
