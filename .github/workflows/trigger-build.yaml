@@ -1,0 +1,39 @@
+##
+# Copyright (c) 2025 Analog Devices, Inc. All Rights Reserved.
+# This software is proprietary and confidential to Analog Devices, Inc. and its licensors.
+##
+
+name: 'Trigger M2k build'
+
+description:
+  'Workflow to trigger m2k build'
+
+on:
+  push:
+    branches:
+      - master
+      - build-action-implementation
+    paths:
+      - .github/workflows/build.yml
+  pull_request:
+    branches:
+      - master
+      - build-action-implementation
+    paths:
+      - .github/workflows/build.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Trigger Build
+        shell: sh
+        run: |
+          ./CI/trigger-is-workflow.sh
+        env:
+          PRIVATE_ORG: ${{ secrets.PRIVATE_ORG }}
+          PRIVATE_REPO: ${{ secrets.PRIVATE_REPO }}
+          PRIVATE_WORKFLOW: ${{ secrets.PRIVATE_WORKFLOW }}
+          GH_TRIGGER_TOKEN: ${{ secrets.GH_TRIGGER_TOKEN }}
