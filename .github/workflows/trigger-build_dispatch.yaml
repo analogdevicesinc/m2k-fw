@@ -9,16 +9,17 @@ description:
   'Workflow to trigger m2k build'
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - ".github/workflows/trigger-build.yml"
-  pull_request:
-    branches:
-      - master
-    paths:
-      - ".github/workflows/trigger-build.yml"
+  workflow_dispatch:
+    inputs:
+      vivado-version:
+        required: false
+        type: string
+        default: 2023.2
+      package-version:
+        required: true
+        type: string
+        description: 
+          'Can contain any characters or numbers (execpt: /, \). Make sure it is unique as possible to not override.'
 
 jobs:
   build:
@@ -30,15 +31,11 @@ jobs:
         shell: sh
         id: build-versions
         run: |
-          timestamp=$(date '+%d-%m-%Y_%H-%M-%S')
-          package_version=$(echo "${timestamp}.m2k-fw")
-          vivado_version=$(cat Makefile | awk 'NR==1{print $NF}')
+          echo "Package Version: ${{ inputs.package-version }}"
+          echo "Vivado Version: ${{ inputs.vivado-version }}"
 
-          echo "Package Version: ${package_version}"
-          echo "Vivado Version: ${vivado_version}"
-
-          echo "package_version=${package_version}" >> $GITHUB_OUTPUT
-          echo "vivado_version=${vivado_version}" >> $GITHUB_OUTPUT
+          echo "package_version=${{ inputs.package-version }}" >> $GITHUB_OUTPUT
+          echo "vivado_version=${{ inputs.vivado-version }}" >> $GITHUB_OUTPUT
       - name: Trigger Build
         shell: sh
         run: |
