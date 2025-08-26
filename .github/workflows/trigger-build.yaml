@@ -13,15 +13,9 @@ on:
     branches:
       - master
       - build-action-implementation
-    paths:
-      - ".github/workflows/trigger-build.yml"
-      - "CI/**"
   pull_request:
     branches:
       - master
-    paths:
-      - ".github/workflows/trigger-build.yml"
-      - "CI/**"
 
 jobs:
   build:
