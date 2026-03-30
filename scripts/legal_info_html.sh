@@ -34,7 +34,7 @@
 TARGET=$1
 TARGET_VERSIONS=$2
 
-MANIFEST=buildroot/output/legal-info/manifest.csv
+MANIFEST=${3:-br2-external/buildroot/output/legal-info/manifest.csv}
 MANIFEST_SORT=/tmp/manifest.??
 sort ${MANIFEST} > ${MANIFEST_SORT}
 
@@ -139,7 +139,7 @@ package_list_items () {
 }
 
 strstr () {
-	echo $1 | grep --quiet $2
+	echo "$1" | grep --quiet "$2"
 }
 
 # package_table_items $((var++)) Linux $(get_version linux) "GPLv2" "https://github.com/analogdevicesinc/linux"
@@ -147,18 +147,30 @@ strstr () {
 package_table_items () {
 	url=$5
 
+	if [ -z "$url" ] || [ "$url" = "not saved" ] ; then
+		echo "<tr>" >> ${FILE}
+		echo "<td><a href=\"#P${1}\">${2}</a></td>" >> ${FILE}
+		echo "<td><a href=\"#P${1}\">${4}</a></td>" >> ${FILE}
+		echo "<td>${3}</td>" >> ${FILE}
+		echo "<td></td>" >> ${FILE}
+		echo "</tr>" >> ${FILE}
+		return
+	fi
+
 	command curl -h > /dev/null 2>&1
 	if [ "$?" = "0" ] ; then
-		if $(strstr $url sourceforge) ; then
+		if $(strstr "$url" sourceforge) ; then
 			url=$(echo ${url} | sed -e 's/downloads\.//' -e 's/project/projects/')
 		fi
 		while [ 1 ] ; do
-			if $(strstr $url "ftp://") ; then
+			if $(strstr "$url" "ftp://") ; then
 				break
 			fi
 			# We should use curl's -L, but then we couldn't track things
-			tmp=$(curl -IsS $url)
-			if [ $(echo "$tmp" | head -1 | grep -E "301|302" | wc -l) -gt 0 ] ; then
+			tmp=$(curl -IsS --connect-timeout 5 --max-time 10 "$url" 2>/dev/null)
+			if [ -z "$tmp" ] ; then
+				break
+			elif [ $(echo "$tmp" | head -1 | grep -E "301|302" | wc -l) -gt 0 ] ; then
 				_url=$url
 				url=$(echo "$tmp" | grep -i "Location:" | awk '{print $2}' | sed -e 's/^[ \t]*//;s/[ \t]*$//')
 				url=${url%$'\r'}
@@ -167,7 +179,7 @@ package_table_items () {
 					break
 				fi
 			elif [ $(echo "$tmp" | head -1 | grep "404" | wc -l) -gt 0 ] ; then
-				url=$(echo $url | sed 's#/[^/]*$##' )
+				url=$(echo "$url" | sed 's#/[^/]*$##' )
 			elif [ $(echo "$tmp" | head -1 | grep "200" | wc -l) -gt 0 ] ; then
 				break
 			else
@@ -184,15 +196,15 @@ package_table_items () {
 	echo "<td><a href=\"#P${1}\">${4}</a></td>" >> ${FILE}
 	echo "<td>${3}</td>" >> ${FILE}
 	echo -n "<td><a href=\"${url}\">" >> ${FILE}
-	if $(strstr $5 github) ; then
+	if $(strstr "$5" github) ; then
 		echo -n "Github" >> ${FILE}
-	elif $(strstr $5 sourceforge) ; then
+	elif $(strstr "$5" sourceforge) ; then
 		echo -n "SourceForge" >> ${FILE}
-	elif $(strstr $5 freedesktop) ; then
+	elif $(strstr "$5" freedesktop) ; then
 		echo -n "Freedesktop" >> ${FILE}
-	elif $(strstr $5 debian) ; then
+	elif $(strstr "$5" debian) ; then
 		echo -n "Debian Project" >> ${FILE}
-	elif $(strstr $5 kernel) ; then
+	elif $(strstr "$5" kernel) ; then
 		echo -n "Kernel.org" >> ${FILE}
 	else
 		echo -n "Project" >> ${FILE}
@@ -261,7 +273,7 @@ html_h2 "Written Offer"
 
 echo "<p>As described above, the firmware included in the ${TARGET} contains copyrighted software that is released and distributed under many licenses, including the GPL.
 A copy of the licenses are included in this file (below)." >> ${FILE}
-if [ "$TARGET" == "M2k" ] ; then
+if [ "$TARGET" == "PlutoSDR" ] || [ "$TARGET" == "M2k" ] ; then
 echo "You may obtain the complete Corresponding Source code from us for a period of three years after our last shipment of this product, which will be no earlier than " >> ${FILE}
 date --date="3 years 6 months" +"%d%b%Y" >> ${FILE}
 echo ", by sending a money order or check for \$15 (USD) to:</p>
@@ -277,7 +289,7 @@ United Kingdom
 Since the source does not fit on a DVD-RW, it will be delivered on a USB Thumb drive (hence the higher cost than just DVD or CD).</p>
 <p><b>You will also find the source on-line, and are encouraged to obtain it for zero cost, at the project web sites.</b></p>
 </div>" >> ${FILE}
-else # not M2k
+else # not PlutoSDR
 echo "Since you, the end user built this from source, for ${TARGET}, and didn't get a binary, there is no requirement for a written offer.
 </div>" >> ${FILE}
 fi
@@ -304,7 +316,8 @@ echo "</tr>" >> ${FILE}
 echo "</thead>" >> ${FILE}
 echo "<tbody>" >> ${FILE}
 package_table_items $((var++)) Linux $(get_version linux) "GPLv2" "https://github.com/analogdevicesinc/linux"
-package_table_items $((var++)) U-Boot $(get_version u-boot-xlnx) "GPLv2" "https://github.com/analogdevicesinc/u-boot-xlnx"
+package_table_items $((var++)) U-Boot $(get_version u-boot) "GPLv2" "https://github.com/analogdevicesinc/u-boot"
+package_table_items $((var++)) HDL $(get_version hdl) "Multiple" "https://github.com/analogdevicesinc/hdl"
 while read -r line
 do
         package=$(get_column "${line}" $PACKAGE)
@@ -335,9 +348,15 @@ html_pre_file linux/COPYING
 html_hr
 ### U-Boot
 html_h1_id "Package: u-boot" "$((var++))"
-package_list_items $(get_version u-boot-xlnx) "GPLv2" "https://github.com/analogdevicesinc/u-boot-xlnx"
+package_list_items $(get_version u-boot) "GPLv2" "https://github.com/analogdevicesinc/u-boot"
 html_h2 "License:"
-html_pre_file u-boot-xlnx/Licenses/gpl-2.0.txt
+html_pre_file u-boot/Licenses/gpl-2.0.txt
+html_hr
+### HDL
+html_h1_id "Package: hdl" "$((var++))"
+package_list_items $(get_version hdl) "Multiple" "https://github.com/analogdevicesinc/hdl"
+html_h2 "License:"
+html_pre_file hdl/LICENSE
 html_hr
 
 #### All other  Buildroot Packages
