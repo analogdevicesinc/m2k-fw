@@ -35,7 +35,7 @@ TARGET ?= m2k
 SUPPORTED_TARGETS:=m2k
 
 # Include target specific constants
-include scripts/$(TARGET).mk
+-include scripts/$(TARGET).mk
 
 ifeq (, $(shell which dfu-suffix))
 $(warning "No dfu-utils in PATH consider doing: sudo apt-get install dfu-util")
