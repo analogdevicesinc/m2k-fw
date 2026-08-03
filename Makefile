@@ -31,34 +31,42 @@ $(error "      3] export VIVADO_VERSION=v20xx.x")
 	endif
 endif
 
-USBPID = 0xb675
+TARGET ?= m2k
+SUPPORTED_TARGETS:=m2k
 
-TARGET_DTS_FILES = zynq-m2k-reva.dtb zynq-m2k-revb.dtb zynq-m2k-revc.dtb zynq-m2k-revd.dtb zynq-m2k-reve.dtb zynq-m2k-revf.dtb
-TARGET_DTS_FILES:=$(foreach dts,$(TARGET_DTS_FILES),build/$(dts))
+# Include target specific constants
+include scripts/$(TARGET).mk
 
 ifeq (, $(shell which dfu-suffix))
 $(warning "No dfu-utils in PATH consider doing: sudo apt-get install dfu-util")
-TARGETS = build/m2k.frm
+TARGETS = build/$(TARGET).frm
 ifeq (1, ${HAVE_VIVADO})
 TARGETS += build/boot.frm jtag-bootstrap
 endif
 else
-TARGETS = build/m2k.dfu build/uboot-env.dfu build/m2k.frm build/mtd2.dfu
+TARGETS = build/$(TARGET).dfu build/uboot-env.dfu build/$(TARGET).frm build/mtd2.dfu
 ifeq (1, ${HAVE_VIVADO})
 TARGETS += build/boot.dfu build/boot.frm jtag-bootstrap
 endif
 endif
 
+ifeq ($(findstring $(TARGET),$(SUPPORTED_TARGETS)),)
+all:
+	@echo "Invalid TARGET variable ; valid values are: $(SUPPORTED_TARGETS)" && exit 1
+else
 all: clean-build $(TARGETS) zip-all legal-info
+endif
 
 .NOTPARALLEL: all
 
 .PHONY: all clean clean-build zip-all legal-info sysroot jtag-bootstrap
-.PHONY: dfu-m2k dfu-sf-uboot dfu-all dfu-ram uboot-test-ram
+.PHONY: dfu-$(TARGET) dfu-sf-uboot dfu-all dfu-ram uboot-test-ram
 .PHONY: git-update-all git-pull
 
+TARGET_DTS_FILES:=$(foreach dts,$(TARGET_DTS_FILES),build/$(dts))
+
 TOOLCHAIN:
-	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) ARCH=arm zynq_m2k_defconfig
+	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) ARCH=arm zynq_$(TARGET)_defconfig
 	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) toolchain
 
 build:
@@ -71,7 +79,7 @@ build:
 ### u-boot ###
 
 u-boot/u-boot u-boot/tools/mkimage: TOOLCHAIN
-	$(TOOLS_PATH) $(MAKE) -C u-boot ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_m2k_defconfig
+	$(TOOLS_PATH) $(MAKE) -C u-boot ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_$(TARGET)_defconfig
 	$(TOOLS_PATH) $(MAKE) -C u-boot -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE)
 
 .PHONY: u-boot/u-boot
@@ -89,7 +97,7 @@ build/uboot-env.bin: build/uboot-env.txt
 ### Linux ###
 
 linux/arch/arm/boot/zImage: TOOLCHAIN
-	$(TOOLS_PATH) $(MAKE) -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_m2k_defconfig
+	$(TOOLS_PATH) $(MAKE) -C linux ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zynq_$(TARGET)_defconfig
 	$(TOOLS_PATH) $(MAKE) -C linux -j $(NCORES) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage UIMAGE_LOADADDR=0x8000
 
 
@@ -110,31 +118,31 @@ build/%.dtb: linux/arch/arm/boot/dts/xilinx/%.dtb | build
 ### Buildroot ###
 
 $(BUILDROOT_DIR)/output/images/rootfs.cpio.gz:
-	@echo device-fw $(VERSION)> $(BR2_EXT_DIR)/board/adi/m2k/VERSIONS
-	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(BR2_EXT_DIR)/board/adi/m2k/VERSIONS;)
-	@echo buildroot $(shell cd $(BUILDROOT_DIR) && git describe --abbrev=4 --dirty --always --tags 2>/dev/null || echo unknown) >> $(BR2_EXT_DIR)/board/adi/m2k/VERSIONS
-	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) ARCH=arm zynq_m2k_defconfig
+	@echo device-fw $(VERSION)> $(BR2_EXT_DIR)/board/adi/$(TARGET)/VERSIONS
+	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(BR2_EXT_DIR)/board/adi/$(TARGET)/VERSIONS;)
+	@echo buildroot $(shell cd $(BUILDROOT_DIR) && git describe --abbrev=4 --dirty --always --tags 2>/dev/null || echo unknown) >> $(BR2_EXT_DIR)/board/adi/$(TARGET)/VERSIONS
+	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) ARCH=arm zynq_$(TARGET)_defconfig
 
 ifneq (1, ${SKIP_LEGAL})
 	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) legal-info
-	scripts/legal_info_html.sh "M2k" "$(BR2_EXT_DIR)/board/adi/m2k/VERSIONS" "$(BUILDROOT_DIR)/output/legal-info/manifest.csv"
-	cp build/LICENSE.html $(BR2_EXT_DIR)/board/adi/m2k/msd/LICENSE.html
+	scripts/legal_info_html.sh "$(COMPLETE_NAME)" "$(BR2_EXT_DIR)/board/adi/$(TARGET)/VERSIONS" "$(BUILDROOT_DIR)/output/legal-info/manifest.csv"
+	cp build/LICENSE.html $(BR2_EXT_DIR)/board/adi/$(TARGET)/msd/LICENSE.html
 endif
 
-	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) BUSYBOX_CONFIG_FILE=$(BR2_EXT_DIR)/board/adi/m2k/busybox-1.25.0.config all
+	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) BUSYBOX_CONFIG_FILE=$(BR2_EXT_DIR)/board/adi/$(TARGET)/busybox-1.25.0.config all
 
 .PHONY: $(BUILDROOT_DIR)/output/images/rootfs.cpio.gz
 
 build/rootfs.cpio.gz: $(BUILDROOT_DIR)/output/images/rootfs.cpio.gz | build
 	cp $< $@
 
-build/m2k.itb: u-boot/tools/mkimage build/zImage build/rootfs.cpio.gz $(TARGET_DTS_FILES) build/system_top.bit
-	u-boot/tools/mkimage -f scripts/m2k.its $@
+build/$(TARGET).itb: u-boot/tools/mkimage build/zImage build/rootfs.cpio.gz $(TARGET_DTS_FILES) build/system_top.bit
+	u-boot/tools/mkimage -f scripts/$(TARGET).its $@
 
 build/system_top.xsa:  | build
 ifeq (1, ${HAVE_VIVADO})
-	bash -c "source $(VIVADO_SETTINGS) && $(MAKE) -C hdl/projects/m2k && cp hdl/projects/m2k/m2k.sdk/system_top.xsa $@"
-	unzip -l $@ | grep -q ps7_init || cp hdl/projects/m2k/m2k.srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
+	bash -c "source $(VIVADO_SETTINGS) && $(MAKE) -C hdl/projects/$(TARGET) && cp hdl/projects/$(TARGET)/$(TARGET).sdk/system_top.xsa $@"
+	unzip -l $@ | grep -q ps7_init || cp hdl/projects/$(TARGET)/$(TARGET).srcs/sources_1/bd/system/ip/system_sys_ps7_0/ps7_init* build/
 else ifneq ($(XSA_FILE),)
 	cp $(XSA_FILE) $@
 else ifneq ($(XSA_URL),)
@@ -157,7 +165,7 @@ build/boot.bin: build/sdk/fsbl/Release/fsbl.elf build/u-boot.elf
 
 ### MSD update firmware file ###
 
-build/m2k.frm: build/m2k.itb
+build/$(TARGET).frm: build/$(TARGET).itb
 	md5sum $< | cut -d ' ' -f 1 > $@.md5
 	cat $< $@.md5 > $@
 
@@ -166,20 +174,20 @@ build/boot.frm: build/boot.bin build/uboot-env.bin scripts/target_mtd_info.key
 
 ### DFU update firmware file ###
 
-build/%.dfu: build/%.bin
+define dfu-suffix-recipe
 	cp $< $<.tmp
-	dfu-suffix -a $<.tmp -v 0x0456 -p $(USBPID)
+	dfu-suffix -a $<.tmp -v $(DEVICE_VID) -p $(DEVICE_PID)
 	mv $<.tmp $@
+endef
 
-build/m2k.dfu: build/m2k.itb
-	cp $< $<.tmp
-	dfu-suffix -a $<.tmp -v 0x0456 -p $(USBPID)
-	mv $<.tmp $@
+build/%.dfu: build/%.bin
+	$(dfu-suffix-recipe)
+
+build/$(TARGET).dfu: build/$(TARGET).itb
+	$(dfu-suffix-recipe)
 
 build/mtd2.dfu: scripts/mtd2.img
-	cp $< $<.tmp
-	dfu-suffix -a $<.tmp -v 0x0456 -p $(USBPID)
-	mv $<.tmp $@
+	$(dfu-suffix-recipe)
 
 clean-build:
 	rm -rf build/*
@@ -192,10 +200,10 @@ clean:
 	rm -rf build/*
 
 zip-all: $(TARGETS)
-	zip -j build/m2k-fw-$(VERSION).zip $^
+	zip -j build/$(ZIP_ARCHIVE_PREFIX)-fw-$(VERSION).zip $^
 
-dfu-m2k: build/m2k.dfu
-	dfu-util -D build/m2k.dfu -a firmware.dfu
+dfu-$(TARGET): build/$(TARGET).dfu
+	dfu-util -D build/$(TARGET).dfu -a firmware.dfu
 	dfu-util -e
 
 dfu-sf-uboot: build/boot.dfu build/uboot-env.dfu
@@ -204,22 +212,22 @@ dfu-sf-uboot: build/boot.dfu build/uboot-env.dfu
 		dfu-util -D build/uboot-env.dfu -a uboot-env.dfu
 	dfu-util -e
 
-dfu-all: build/m2k.dfu build/boot.dfu build/uboot-env.dfu
+dfu-all: build/$(TARGET).dfu build/boot.dfu build/uboot-env.dfu
 	echo "Erasing u-boot be careful - Press Return to continue... " && read key && \
-		dfu-util -D build/m2k.dfu -a firmware.dfu && \
+		dfu-util -D build/$(TARGET).dfu -a firmware.dfu && \
 		dfu-util -D build/boot.dfu -a boot.dfu  && \
 		dfu-util -D build/uboot-env.dfu -a uboot-env.dfu
 	dfu-util -e
 
-dfu-ram: build/m2k.dfu
-	sshpass -p analog ssh root@m2k '/usr/sbin/device_reboot ram;'
+dfu-ram: build/$(TARGET).dfu
+	sshpass -p analog ssh root@$(TARGET) '/usr/sbin/device_reboot ram;'
 	sleep 7
-	dfu-util -D build/m2k.dfu -a firmware.dfu
+	dfu-util -D build/$(TARGET).dfu -a firmware.dfu
 	dfu-util -e
 
 uboot-test-ram: u-boot/u-boot
-	@echo "Rebooting m2k into DFU RAM mode..."
-	sshpass -p analog ssh root@m2k '/usr/sbin/device_reboot ram;'
+	@echo "Rebooting $(TARGET) into DFU RAM mode..."
+	sshpass -p analog ssh root@$(TARGET) '/usr/sbin/device_reboot ram;'
 	sleep 7
 	@echo "Uploading new u-boot to RAM via DFU..."
 	dfu-util -D u-boot/u-boot.bin -a firmware.dfu
@@ -235,7 +243,7 @@ uboot-test-ram: u-boot/u-boot
 
 jtag-bootstrap: build/u-boot.elf build/ps7_init.tcl build/system_top.bit scripts/run.tcl scripts/run-xsdb.tcl
 	$(TOOLS_PATH) $(CROSS_COMPILE)strip build/u-boot.elf
-	zip -j build/m2k-$@-$(VERSION).zip $^
+	zip -j build/$(ZIP_ARCHIVE_PREFIX)-$@-$(VERSION).zip $^
 
 sysroot: $(BUILDROOT_DIR)/output/images/rootfs.cpio.gz
 	tar czfh build/sysroot-$(VERSION).tar.gz --hard-dereference --exclude=usr/share/man --exclude=dev --exclude=etc -C $(BUILDROOT_DIR)/output staging
@@ -289,9 +297,9 @@ ifneq (1, ${SKIP_LEGAL})
 	# Full firmware SBOM (buildroot packages + linux + u-boot + hdl)
 	python3 scripts/merge_cyclonedx.py \
 		-i $(SBOM_DIR)/buildroot-$(VERSION).cdx.json \
-		--project-name m2k --project-version $(VERSION) \
+		--project-name $(TARGET) --project-version $(VERSION) \
 		$(EXTRA_PKGS) \
-		-o $(SBOM_DIR)/m2k-$(VERSION).cdx.json
+		-o $(SBOM_DIR)/$(TARGET)-$(VERSION).cdx.json
 endif
 
 
