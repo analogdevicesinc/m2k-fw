@@ -13,3 +13,7 @@
 	path = u-boot
 	url = https://github.com/analogdevicesinc/u-boot.git
 	branch = adi-xlnx-u-boot-2025.1-y-pluto-m2k
+[submodule "buildroot"]
+	path = buildroot
+	url = https://github.com/analogdevicesinc/buildroot.git
+	branch = adi-2026.02-y
