@@ -110,18 +110,18 @@ build/%.dtb: linux/arch/arm/boot/dts/xilinx/%.dtb | build
 ### Buildroot ###
 
 $(BUILDROOT_DIR)/output/images/rootfs.cpio.gz:
-	@echo device-fw $(VERSION)> $(BR2_EXT_DIR)/board/m2k/VERSIONS
-	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(BR2_EXT_DIR)/board/m2k/VERSIONS;)
-	@echo buildroot $(shell cd $(BUILDROOT_DIR) && git describe --abbrev=4 --dirty --always --tags 2>/dev/null || echo unknown) >> $(BR2_EXT_DIR)/board/m2k/VERSIONS
+	@echo device-fw $(VERSION)> $(BR2_EXT_DIR)/board/adi/m2k/VERSIONS
+	@$(foreach dir,$(VSUBDIRS),echo $(dir) $(shell cd $(dir) && git describe --abbrev=4 --dirty --always --tags) >> $(BR2_EXT_DIR)/board/adi/m2k/VERSIONS;)
+	@echo buildroot $(shell cd $(BUILDROOT_DIR) && git describe --abbrev=4 --dirty --always --tags 2>/dev/null || echo unknown) >> $(BR2_EXT_DIR)/board/adi/m2k/VERSIONS
 	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) ARCH=arm zynq_m2k_defconfig
 
 ifneq (1, ${SKIP_LEGAL})
 	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) legal-info
-	scripts/legal_info_html.sh "M2k" "$(BR2_EXT_DIR)/board/m2k/VERSIONS" "$(BUILDROOT_DIR)/output/legal-info/manifest.csv"
-	cp build/LICENSE.html $(BR2_EXT_DIR)/board/m2k/msd/LICENSE.html
+	scripts/legal_info_html.sh "M2k" "$(BR2_EXT_DIR)/board/adi/m2k/VERSIONS" "$(BUILDROOT_DIR)/output/legal-info/manifest.csv"
+	cp build/LICENSE.html $(BR2_EXT_DIR)/board/adi/m2k/msd/LICENSE.html
 endif
 
-	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) BUSYBOX_CONFIG_FILE=$(BR2_EXT_DIR)/board/m2k/busybox-1.25.0.config all
+	$(MAKE) -C $(BUILDROOT_DIR) BR2_EXTERNAL=$(BR2_EXT_DIR) BUSYBOX_CONFIG_FILE=$(BR2_EXT_DIR)/board/adi/m2k/busybox-1.25.0.config all
 
 .PHONY: $(BUILDROOT_DIR)/output/images/rootfs.cpio.gz
 
